@@ -8,6 +8,7 @@
 
 #include "examples_common.h"
 
+#include <conio.h> // library for continual key input
 /**
  * @example generate_joint_position_motion.cpp
  * An example showing how to generate a joint position motion.
@@ -52,14 +53,39 @@ int main(int argc, char** argv) {
         initial_position = robot_state.q;
       }
 
-      double delta_angle = M_PI / 8.0 * (1 - std::cos(M_PI / 2.5 * time));
+      double delta_angle = M_PI / 8.0 * (1 - std::cos(M_PI / 2.5 * time)); // unedited
 
-      franka::JointPositions output = {{initial_position[0], initial_position[1],
+      // ask user for continually inputs?
+      // if A, then move to left (negative delta angle?)
+      // if D, move to right (positive delta angle?)
+      string keystroke;
+      std::cout<< "Press A or D keys to control robot" << std::endl;
+
+      while (time < 30.0){
+        if ( kbhit() )
+          keystroke = getch();
+          std::cout<< "Received Input: " << keystroke << std::endl;
+        // do stuff depending on key_code
+           if (keystroke == "A"){
+              delta_angle = delta_angle*-1;
+              franka::JointPositions output = {{initial_position[0], initial_position[1],
                                         initial_position[2], initial_position[3] + delta_angle,
                                         initial_position[4] + delta_angle, initial_position[5],
-                                        initial_position[6] + delta_angle}};
-
-      if (time >= 5.0) {
+                                        initial_position[6]}};
+          }
+          else if (keystroke == "D"{
+              franka::JointPositions output = {{initial_position[0], initial_position[1],
+                                        initial_position[2], initial_position[3] + delta_angle,
+                                        initial_position[4] + delta_angle, initial_position[5],
+                                        initial_position[6]}};
+          }
+          else {
+            std::cout<< "Incorrect input." << std::endl;
+        else 
+          continue;
+      
+  
+      if (time >= 30.0) {
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
         return franka::MotionFinished(output);
       }
